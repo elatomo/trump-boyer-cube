@@ -2,20 +2,27 @@
   "name": "trump-boyer-cube",
   "version": "1.0.0",
   "description": "An interactive 3D visualization of the perfect magic cube of order 5 discovered by Walter Trump and Christian Boyer in 2003.",
-  "main": "index.js",
+  "main": "dist/trump-boyer-cube.js",
+  "browser": "dist/trump-boyer-cube.min.js",
+  "files": [
+    "dist",
+    "src",
+    "LICENSE"
+  ],
   "directories": {
     "example": "examples"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "esbuild src/trump-boyer-cube.js --bundle --serve=8000 --servedir=dev --outfile=dev/trump-boyer-cube.dev.js",
+    "build": "node build.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/elatomo/trump-boyer-cube.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["magic cube", "three.js", "visualization", "mathematics", "3D"],
+  "author": "José Fernández Ramos",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/elatomo/trump-boyer-cube/issues"
   },

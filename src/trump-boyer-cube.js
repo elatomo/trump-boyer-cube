@@ -13,6 +13,12 @@
  * @see https://github.com/elatomo/trump-boyer-cube
  */
 
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+// Make THREE available globally for backward compatibility
+window.THREE = THREE;
+
 // Wait for DOM to be fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   /**
@@ -82,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("container").appendChild(renderer.domElement);
 
   // Orbit controls
-  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
 
