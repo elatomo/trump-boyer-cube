@@ -1,27 +1,18 @@
 # Dependencies
 node_modules/
-bower_components/
-
-# Build outputs
-dist/
-build/
-*.min.js
-
-# Development tools
-.vscode/
-.idea/
-*.sublime-*
 
 # Logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # OS files
 .DS_Store
 Thumbs.db
-Desktop.ini
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-*
 
 # Environment variables
 .env
@@ -31,3 +22,6 @@ Desktop.ini
 *.tmp
 *.swp
 *.swo
+
+# Keep dist files (remove them from being ignored)
+# !dist/
