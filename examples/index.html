@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trump-Boyer Magic Cube - Example</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    p {
+      margin: 0.5rem 0 0;
+    }
+
+    #container {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    footer {
+      background-color: #333;
+      color: white;
+      padding: 0.8rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    a {
+      color: #4fc3f7;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .node-label {
+      color: black;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 2px 4px;
+      border-radius: 3px;
+      position: absolute;
+      pointer-events: none;
+      font-size: 14px;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Trump-Boyer Magic Cube</h1>
+    <p>A perfect magic cube of order 5 discovered by Walter Trump and Christian Boyer in 2003</p>
+  </header>
+
+  <div id="container"></div>
+
+  <footer>
+    <p>Visualization by José Fernández Ramos | <a href="https://github.com/elatomo/trump-boyer-cube" target="_blank">View on GitHub</a></p>
+  </footer>
+
+  <!-- Configure visualization (optional) -->
+  <script>
+    window.MAGIC_CUBE_CONFIG = {
+      autoRotate: true,
+      showNodeNumbers: true,
+      showCubeWireframe: true,
+      lineMode: "full"
+    };
+  </script>
+
+  <!-- Include the Trump-Boyer Cube library -->
+  <script src="../dist/trump-boyer-cube.min.js"></script>
+</body>
+</html>
