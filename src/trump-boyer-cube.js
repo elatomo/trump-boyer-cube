@@ -13,11 +13,22 @@
  * @see https://github.com/elatomo/trump-boyer-cube
  */
 
-import * as THREE from "three";
+import {
+  BufferGeometry,
+  Color,
+  Group,
+  Line,
+  LineBasicMaterial,
+  LineDashedMaterial,
+  Mesh,
+  MeshBasicMaterial,
+  PerspectiveCamera,
+  Scene,
+  SphereGeometry,
+  Vector3,
+  WebGLRenderer,
+} from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-
-// Make THREE available globally for backward compatibility
-window.THREE = THREE;
 
 // Wait for DOM to be fully loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -61,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const elements = {
     nodes: [],
     nodeLabels: [],
-    group: new THREE.Group(),
+    group: new Group(),
     labelContainer: createLabelContainer(),
   };
 
@@ -72,10 +83,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Initial scene setup
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(CONFIG.colors.background);
+  const scene = new Scene();
+  scene.background = new Color(CONFIG.colors.background);
 
-  const camera = new THREE.PerspectiveCamera(
+  const camera = new PerspectiveCamera(
     CONFIG.camera.fov,
     window.innerWidth / window.innerHeight,
     0.1,
@@ -83,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   camera.position.set(0, 0, CONFIG.camera.distance);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  const renderer = new WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.getElementById("container").appendChild(renderer.domElement);
 
@@ -200,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const posZ = (z - 2) * CONFIG.scale;
 
           // Store position mappings
-          const position = new THREE.Vector3(posX, posY, posZ);
+          const position = new Vector3(posX, posY, posZ);
           data.numberToPosition[number] = position;
           data.positionToNumber[`${posX},${posY},${posZ}`] = number;
 
@@ -233,11 +244,11 @@ document.addEventListener("DOMContentLoaded", () => {
    * Creates a sphere to represent a node at the given position
    */
   function createNode(number, position) {
-    const geometry = new THREE.SphereGeometry(CONFIG.nodeSize, 16, 16);
-    const material = new THREE.MeshBasicMaterial({
+    const geometry = new SphereGeometry(CONFIG.nodeSize, 16, 16);
+    const material = new MeshBasicMaterial({
       color: CONFIG.colors.nodes,
     });
-    const sphere = new THREE.Mesh(geometry, material);
+    const sphere = new Mesh(geometry, material);
     sphere.position.copy(position);
     sphere.userData = { number };
     elements.group.add(sphere);
@@ -281,20 +292,20 @@ document.addEventListener("DOMContentLoaded", () => {
       elements.group.remove(oldWireframe);
     }
 
-    const wireframe = new THREE.Group();
+    const wireframe = new Group();
     wireframe.name = "wireframe";
     const cubeSize = CONFIG.scale * 2; // 2 units from center to edge
 
     // Define cube vertices (corners)
     const vertices = [
-      new THREE.Vector3(-cubeSize, cubeSize, -cubeSize), // 0: top-left-back
-      new THREE.Vector3(cubeSize, cubeSize, -cubeSize), // 1: top-right-back
-      new THREE.Vector3(cubeSize, cubeSize, cubeSize), // 2: top-right-front
-      new THREE.Vector3(-cubeSize, cubeSize, cubeSize), // 3: top-left-front
-      new THREE.Vector3(-cubeSize, -cubeSize, -cubeSize), // 4: bottom-left-back
-      new THREE.Vector3(cubeSize, -cubeSize, -cubeSize), // 5: bottom-right-back
-      new THREE.Vector3(cubeSize, -cubeSize, cubeSize), // 6: bottom-right-front
-      new THREE.Vector3(-cubeSize, -cubeSize, cubeSize), // 7: bottom-left-front
+      new Vector3(-cubeSize, cubeSize, -cubeSize), // 0: top-left-back
+      new Vector3(cubeSize, cubeSize, -cubeSize), // 1: top-right-back
+      new Vector3(cubeSize, cubeSize, cubeSize), // 2: top-right-front
+      new Vector3(-cubeSize, cubeSize, cubeSize), // 3: top-left-front
+      new Vector3(-cubeSize, -cubeSize, -cubeSize), // 4: bottom-left-back
+      new Vector3(cubeSize, -cubeSize, -cubeSize), // 5: bottom-right-back
+      new Vector3(cubeSize, -cubeSize, cubeSize), // 6: bottom-right-front
+      new Vector3(-cubeSize, -cubeSize, cubeSize), // 7: bottom-left-front
     ];
 
     // Define edges by vertex indices
@@ -327,14 +338,14 @@ document.addEventListener("DOMContentLoaded", () => {
    * Creates a dashed line between two points
    */
   function createDashedLine(start, end) {
-    const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
-    const material = new THREE.LineDashedMaterial({
+    const geometry = new BufferGeometry().setFromPoints([start, end]);
+    const material = new LineDashedMaterial({
       color: CONFIG.colors.wireframe,
       linewidth: 1,
       dashSize: 0.3,
       gapSize: 0.3,
     });
-    const line = new THREE.Line(geometry, material);
+    const line = new Line(geometry, material);
     line.computeLineDistances(); // Required for dashed lines
     return line;
   }
@@ -366,13 +377,13 @@ document.addEventListener("DOMContentLoaded", () => {
       .map((num) => data.numberToPosition[num])
       .filter(Boolean);
 
-    const material = new THREE.LineBasicMaterial({
+    const material = new LineBasicMaterial({
       color: CONFIG.colors.sequenceLine,
       linewidth: 1,
     });
 
-    const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
-    const line = new THREE.Line(geometry, material);
+    const geometry = new BufferGeometry().setFromPoints(linePoints);
+    const line = new Line(geometry, material);
     line.name = "sequenceLine";
 
     elements.group.add(line);
@@ -387,7 +398,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     for (const label of elements.nodeLabels) {
       // Get world position (accounting for group rotation)
-      const worldPos = new THREE.Vector3();
+      const worldPos = new Vector3();
       worldPos.copy(label.position);
       worldPos.applyMatrix4(elements.group.matrixWorld);
 
@@ -471,7 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
    * Helper method to clear all children from a group
    */
-  THREE.Group.prototype.clear = function () {
+  Group.prototype.clear = function () {
     while (this.children.length > 0) {
       this.remove(this.children[0]);
     }
