@@ -1,4 +1,4 @@
-var TrumpBoyerCube = (() => {
+(() => {
   // node_modules/three/build/three.core.js
   var REVISION = "176";
   var MOUSE = { LEFT: 0, MIDDLE: 1, RIGHT: 2, ROTATE: 0, DOLLY: 1, PAN: 2 };
@@ -25941,7 +25941,7 @@ void main() {
   }
 
   // src/trump-boyer-cube.js
-  document.addEventListener("DOMContentLoaded", () => {
+  var TrumpBoyerCube = /* @__PURE__ */ function() {
     const DEFAULT_CONFIG = {
       /** Visualization options */
       autoRotate: true,
@@ -25955,8 +25955,6 @@ void main() {
       lineMode: "full",
       // 'full', 'even', 'odd', or 'none'
       /** Geometry settings */
-      scale: 2.5,
-      // Controls overall cube size (node spacing and wireframe)
       nodeSize: 0.15,
       // Size of the spheres representing nodes
       /** Animation settings */
@@ -25981,300 +25979,367 @@ void main() {
         // Black
       }
     };
-    const CONFIG = mergeConfigs(DEFAULT_CONFIG, window.MAGIC_CUBE_CONFIG || {});
-    const elements = {
-      nodes: [],
-      nodeLabels: [],
-      group: new Group(),
-      labelContainer: createLabelContainer()
-    };
-    const data = {
-      numberToPosition: {},
-      positionToNumber: {}
-    };
-    const scene = new Scene();
-    scene.background = new Color(CONFIG.colors.background);
-    const camera = new PerspectiveCamera(
-      CONFIG.camera.fov,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1e3
-    );
-    camera.position.set(0, 0, CONFIG.camera.distance);
-    const renderer = new WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById("container").appendChild(renderer.domElement);
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    const magicCube = [
-      // Layer 1
-      [
-        [25, 16, 80, 104, 90],
-        [115, 98, 4, 1, 97],
-        [42, 111, 85, 2, 75],
-        [66, 72, 27, 102, 48],
-        [67, 18, 119, 106, 5]
-      ],
-      // Layer 2
-      [
-        [91, 77, 71, 6, 70],
-        [52, 64, 117, 69, 13],
-        [30, 118, 21, 123, 23],
-        [26, 39, 92, 44, 114],
-        [116, 17, 14, 73, 95]
-      ],
-      // Layer 3
-      [
-        [47, 61, 45, 76, 86],
-        [107, 43, 38, 33, 94],
-        [89, 68, 63, 58, 37],
-        [32, 93, 88, 83, 19],
-        [40, 50, 81, 65, 79]
-      ],
-      // Layer 4
-      [
-        [31, 53, 112, 109, 10],
-        [12, 82, 34, 87, 100],
-        [103, 3, 105, 8, 96],
-        [113, 57, 9, 62, 74],
-        [56, 120, 55, 49, 35]
-      ],
-      // Layer 5
-      [
-        [121, 108, 7, 20, 59],
-        [29, 28, 122, 125, 11],
-        [51, 15, 41, 124, 84],
-        [78, 54, 99, 24, 60],
-        [36, 110, 46, 22, 101]
-      ]
-    ];
-    function mergeConfigs(defaultConfig, userConfig) {
-      const result = { ...defaultConfig };
-      for (const key in userConfig) {
-        if (typeof userConfig[key] === "object" && userConfig[key] !== null && typeof defaultConfig[key] === "object" && defaultConfig[key] !== null) {
-          result[key] = mergeConfigs(defaultConfig[key], userConfig[key]);
-        } else if (userConfig[key] !== void 0) {
-          result[key] = userConfig[key];
-        }
+    const CUBE_SCALE = 2.5;
+    function create(container, userConfig = {}) {
+      if (!container || !(container instanceof HTMLElement)) {
+        throw new Error(
+          "TrumpBoyerCube.create requires a valid DOM element as first parameter"
+        );
       }
-      return result;
-    }
-    function createLabelContainer() {
-      const container = document.createElement("div");
-      Object.assign(container.style, {
-        position: "absolute",
-        top: "0",
-        left: "0",
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-        overflow: "hidden"
-      });
-      document.body.appendChild(container);
-      return container;
-    }
-    function createNodes() {
-      elements.group.clear();
-      elements.nodes = [];
-      clearLabels();
-      for (let z = 0; z < 5; z++) {
-        for (let y = 0; y < 5; y++) {
-          for (let x = 0; x < 5; x++) {
-            const number = magicCube[z][y][x];
-            const posX = (x - 2) * CONFIG.scale;
-            const posY = -(y - 2) * CONFIG.scale;
-            const posZ = (z - 2) * CONFIG.scale;
-            const position = new Vector3(posX, posY, posZ);
-            data.numberToPosition[number] = position;
-            data.positionToNumber[`${posX},${posY},${posZ}`] = number;
-            if (CONFIG.showNodes) {
-              createNode(number, position);
-            }
-            if (CONFIG.showNodeNumbers) {
-              createNodeLabel(number, position);
+      let config = mergeConfigs(DEFAULT_CONFIG, userConfig);
+      let elements = {
+        nodes: [],
+        nodeLabels: [],
+        group: new Group(),
+        labelContainer: null
+      };
+      let data = {
+        numberToPosition: {},
+        positionToNumber: {}
+      };
+      let scene, camera, renderer, controls;
+      let autoRotate;
+      function init() {
+        autoRotate = config.autoRotate;
+        scene = new Scene();
+        scene.background = new Color(config.colors.background);
+        camera = new PerspectiveCamera(
+          config.camera.fov,
+          container.clientWidth / container.clientHeight,
+          0.1,
+          1e3
+        );
+        camera.position.set(0, 0, config.camera.distance);
+        renderer = new WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(renderer.domElement);
+        elements.labelContainer = createLabelContainer();
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.addEventListener("end", function() {
+          if (config.autoRotate) {
+            setTimeout(() => {
+              autoRotate = true;
+            }, 500);
+          }
+        });
+        controls.addEventListener("start", function() {
+          autoRotate = false;
+        });
+        createNodes();
+        const resizeHandler = () => {
+          camera.aspect = container.clientWidth / container.clientHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(container.clientWidth, container.clientHeight);
+        };
+        window.addEventListener("resize", resizeHandler);
+        animate();
+        return function destroy2() {
+          window.removeEventListener("resize", resizeHandler);
+          cancelAnimationFrame(animationFrameId);
+          controls.dispose();
+          container.removeChild(renderer.domElement);
+          document.body.removeChild(elements.labelContainer);
+        };
+      }
+      const magicCube = [
+        // Layer 1
+        [
+          [25, 16, 80, 104, 90],
+          [115, 98, 4, 1, 97],
+          [42, 111, 85, 2, 75],
+          [66, 72, 27, 102, 48],
+          [67, 18, 119, 106, 5]
+        ],
+        // Layer 2
+        [
+          [91, 77, 71, 6, 70],
+          [52, 64, 117, 69, 13],
+          [30, 118, 21, 123, 23],
+          [26, 39, 92, 44, 114],
+          [116, 17, 14, 73, 95]
+        ],
+        // Layer 3
+        [
+          [47, 61, 45, 76, 86],
+          [107, 43, 38, 33, 94],
+          [89, 68, 63, 58, 37],
+          [32, 93, 88, 83, 19],
+          [40, 50, 81, 65, 79]
+        ],
+        // Layer 4
+        [
+          [31, 53, 112, 109, 10],
+          [12, 82, 34, 87, 100],
+          [103, 3, 105, 8, 96],
+          [113, 57, 9, 62, 74],
+          [56, 120, 55, 49, 35]
+        ],
+        // Layer 5
+        [
+          [121, 108, 7, 20, 59],
+          [29, 28, 122, 125, 11],
+          [51, 15, 41, 124, 84],
+          [78, 54, 99, 24, 60],
+          [36, 110, 46, 22, 101]
+        ]
+      ];
+      function mergeConfigs(defaultConfig, userConfig2) {
+        const result = { ...defaultConfig };
+        for (const key in userConfig2) {
+          if (typeof userConfig2[key] === "object" && userConfig2[key] !== null && typeof defaultConfig[key] === "object" && defaultConfig[key] !== null) {
+            result[key] = mergeConfigs(defaultConfig[key], userConfig2[key]);
+          } else if (userConfig2[key] !== void 0) {
+            result[key] = userConfig2[key];
+          }
+        }
+        return result;
+      }
+      function createLabelContainer() {
+        const container2 = document.createElement("div");
+        Object.assign(container2.style, {
+          position: "absolute",
+          top: "0",
+          left: "0",
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          overflow: "hidden"
+        });
+        document.body.appendChild(container2);
+        return container2;
+      }
+      function createNodes() {
+        elements.group.clear();
+        elements.nodes = [];
+        clearLabels();
+        for (let z = 0; z < 5; z++) {
+          for (let y = 0; y < 5; y++) {
+            for (let x = 0; x < 5; x++) {
+              const number = magicCube[z][y][x];
+              const posX = (x - 2) * CUBE_SCALE;
+              const posY = -(y - 2) * CUBE_SCALE;
+              const posZ = (z - 2) * CUBE_SCALE;
+              const position = new Vector3(posX, posY, posZ);
+              data.numberToPosition[number] = position;
+              data.positionToNumber[`${posX},${posY},${posZ}`] = number;
+              if (config.showNodes) {
+                createNode(number, position);
+              }
+              if (config.showNodeNumbers) {
+                createNodeLabel(number, position);
+              }
             }
           }
         }
-      }
-      scene.add(elements.group);
-      if (CONFIG.showCubeWireframe) {
-        createCubeWireframe();
-      }
-      if (CONFIG.lineMode !== "none") {
-        createSequenceLine();
-      }
-    }
-    function createNode(number, position) {
-      const geometry = new SphereGeometry(CONFIG.nodeSize, 16, 16);
-      const material = new MeshBasicMaterial({
-        color: CONFIG.colors.nodes
-      });
-      const sphere = new Mesh(geometry, material);
-      sphere.position.copy(position);
-      sphere.userData = { number };
-      elements.group.add(sphere);
-      elements.nodes.push(sphere);
-    }
-    function createNodeLabel(number, position) {
-      const labelDiv = document.createElement("div");
-      labelDiv.className = "node-label";
-      labelDiv.textContent = number;
-      labelDiv.style.display = "none";
-      elements.labelContainer.appendChild(labelDiv);
-      elements.nodeLabels.push({
-        element: labelDiv,
-        position: position.clone(),
-        number
-      });
-    }
-    function clearLabels() {
-      while (elements.labelContainer.firstChild) {
-        elements.labelContainer.removeChild(elements.labelContainer.firstChild);
-      }
-      elements.nodeLabels = [];
-    }
-    function createCubeWireframe() {
-      const oldWireframe = elements.group.getObjectByName("wireframe");
-      if (oldWireframe) {
-        elements.group.remove(oldWireframe);
-      }
-      const wireframe = new Group();
-      wireframe.name = "wireframe";
-      const cubeSize = CONFIG.scale * 2;
-      const vertices = [
-        new Vector3(-cubeSize, cubeSize, -cubeSize),
-        // 0: top-left-back
-        new Vector3(cubeSize, cubeSize, -cubeSize),
-        // 1: top-right-back
-        new Vector3(cubeSize, cubeSize, cubeSize),
-        // 2: top-right-front
-        new Vector3(-cubeSize, cubeSize, cubeSize),
-        // 3: top-left-front
-        new Vector3(-cubeSize, -cubeSize, -cubeSize),
-        // 4: bottom-left-back
-        new Vector3(cubeSize, -cubeSize, -cubeSize),
-        // 5: bottom-right-back
-        new Vector3(cubeSize, -cubeSize, cubeSize),
-        // 6: bottom-right-front
-        new Vector3(-cubeSize, -cubeSize, cubeSize)
-        // 7: bottom-left-front
-      ];
-      const edges = [
-        [0, 1],
-        [1, 2],
-        [2, 3],
-        [3, 0],
-        // Top face
-        [4, 5],
-        [5, 6],
-        [6, 7],
-        [7, 4],
-        // Bottom face
-        [0, 4],
-        [1, 5],
-        [2, 6],
-        [3, 7]
-        // Connecting edges
-      ];
-      for (let [startIdx, endIdx] of edges) {
-        const line = createDashedLine(vertices[startIdx], vertices[endIdx]);
-        wireframe.add(line);
-      }
-      elements.group.add(wireframe);
-      return wireframe;
-    }
-    function createDashedLine(start, end) {
-      const geometry = new BufferGeometry().setFromPoints([start, end]);
-      const material = new LineDashedMaterial({
-        color: CONFIG.colors.wireframe,
-        linewidth: 1,
-        dashSize: 0.3,
-        gapSize: 0.3
-      });
-      const line = new Line(geometry, material);
-      line.computeLineDistances();
-      return line;
-    }
-    function createSequenceLine() {
-      const oldLine = elements.group.getObjectByName("sequenceLine");
-      if (oldLine) {
-        elements.group.remove(oldLine);
-      }
-      let allNumbers = Object.keys(data.numberToPosition).map(Number).sort((a, b) => a - b);
-      if (CONFIG.lineMode === "even") {
-        allNumbers = allNumbers.filter((num) => num % 2 === 0);
-      } else if (CONFIG.lineMode === "odd") {
-        allNumbers = allNumbers.filter((num) => num % 2 === 1);
-      }
-      const linePoints = allNumbers.map((num) => data.numberToPosition[num]).filter(Boolean);
-      const material = new LineBasicMaterial({
-        color: CONFIG.colors.sequenceLine,
-        linewidth: 1
-      });
-      const geometry = new BufferGeometry().setFromPoints(linePoints);
-      const line = new Line(geometry, material);
-      line.name = "sequenceLine";
-      elements.group.add(line);
-      return line;
-    }
-    function updateNodeLabels() {
-      if (!CONFIG.showNodeNumbers) return;
-      for (const label of elements.nodeLabels) {
-        const worldPos = new Vector3();
-        worldPos.copy(label.position);
-        worldPos.applyMatrix4(elements.group.matrixWorld);
-        worldPos.project(camera);
-        const x = (worldPos.x * 0.5 + 0.5) * window.innerWidth;
-        const y = (-worldPos.y * 0.5 + 0.5) * window.innerHeight;
-        label.element.style.left = `${x}px`;
-        label.element.style.top = `${y}px`;
-        if (worldPos.z < 0.9) {
-          label.element.style.display = "block";
-          const opacity = Math.max(0.3, 1 - (worldPos.z + 1) / 2);
-          label.element.style.opacity = opacity.toString();
-          const zIndex = Math.round((1 - worldPos.z) * 1e3);
-          label.element.style.zIndex = zIndex;
-        } else {
-          label.element.style.display = "none";
+        scene.add(elements.group);
+        if (config.showCubeWireframe) {
+          createCubeWireframe();
+        }
+        if (config.lineMode !== "none") {
+          createSequenceLine();
         }
       }
+      function createNode(number, position) {
+        const geometry = new SphereGeometry(config.nodeSize, 16, 16);
+        const material = new MeshBasicMaterial({
+          color: config.colors.nodes
+        });
+        const sphere = new Mesh(geometry, material);
+        sphere.position.copy(position);
+        sphere.userData = { number };
+        elements.group.add(sphere);
+        elements.nodes.push(sphere);
+      }
+      function createNodeLabel(number, position) {
+        const labelDiv = document.createElement("div");
+        labelDiv.className = "node-label";
+        labelDiv.textContent = number;
+        labelDiv.style.display = "none";
+        elements.labelContainer.appendChild(labelDiv);
+        elements.nodeLabels.push({
+          element: labelDiv,
+          position: position.clone(),
+          number
+        });
+      }
+      function clearLabels() {
+        while (elements.labelContainer.firstChild) {
+          elements.labelContainer.removeChild(elements.labelContainer.firstChild);
+        }
+        elements.nodeLabels = [];
+      }
+      function createCubeWireframe() {
+        const oldWireframe = elements.group.getObjectByName("wireframe");
+        if (oldWireframe) {
+          elements.group.remove(oldWireframe);
+        }
+        if (!config.showCubeWireframe) {
+          return null;
+        }
+        const wireframe = new Group();
+        wireframe.name = "wireframe";
+        const cubeSize = CUBE_SCALE * 2;
+        const vertices = [
+          new Vector3(-cubeSize, cubeSize, -cubeSize),
+          // 0: top-left-back
+          new Vector3(cubeSize, cubeSize, -cubeSize),
+          // 1: top-right-back
+          new Vector3(cubeSize, cubeSize, cubeSize),
+          // 2: top-right-front
+          new Vector3(-cubeSize, cubeSize, cubeSize),
+          // 3: top-left-front
+          new Vector3(-cubeSize, -cubeSize, -cubeSize),
+          // 4: bottom-left-back
+          new Vector3(cubeSize, -cubeSize, -cubeSize),
+          // 5: bottom-right-back
+          new Vector3(cubeSize, -cubeSize, cubeSize),
+          // 6: bottom-right-front
+          new Vector3(-cubeSize, -cubeSize, cubeSize)
+          // 7: bottom-left-front
+        ];
+        const edges = [
+          [0, 1],
+          [1, 2],
+          [2, 3],
+          [3, 0],
+          // Top face
+          [4, 5],
+          [5, 6],
+          [6, 7],
+          [7, 4],
+          // Bottom face
+          [0, 4],
+          [1, 5],
+          [2, 6],
+          [3, 7]
+          // Connecting edges
+        ];
+        for (let [startIdx, endIdx] of edges) {
+          const line = createDashedLine(vertices[startIdx], vertices[endIdx]);
+          wireframe.add(line);
+        }
+        elements.group.add(wireframe);
+        return wireframe;
+      }
+      function createDashedLine(start, end) {
+        const geometry = new BufferGeometry().setFromPoints([start, end]);
+        const material = new LineDashedMaterial({
+          color: config.colors.wireframe,
+          linewidth: 1,
+          dashSize: 0.3,
+          gapSize: 0.3
+        });
+        const line = new Line(geometry, material);
+        line.computeLineDistances();
+        return line;
+      }
+      function createSequenceLine() {
+        const oldLine = elements.group.getObjectByName("sequenceLine");
+        if (oldLine) {
+          elements.group.remove(oldLine);
+        }
+        if (config.lineMode === "none") {
+          return null;
+        }
+        let allNumbers = Object.keys(data.numberToPosition).map(Number).sort((a, b) => a - b);
+        if (config.lineMode === "even") {
+          allNumbers = allNumbers.filter((num) => num % 2 === 0);
+        } else if (config.lineMode === "odd") {
+          allNumbers = allNumbers.filter((num) => num % 2 === 1);
+        }
+        const linePoints = allNumbers.map((num) => data.numberToPosition[num]).filter(Boolean);
+        const material = new LineBasicMaterial({
+          color: config.colors.sequenceLine,
+          linewidth: 1
+        });
+        const geometry = new BufferGeometry().setFromPoints(linePoints);
+        const line = new Line(geometry, material);
+        line.name = "sequenceLine";
+        elements.group.add(line);
+        return line;
+      }
+      function updateNodeLabels() {
+        if (!config.showNodeNumbers) return;
+        for (const label of elements.nodeLabels) {
+          const worldPos = new Vector3();
+          worldPos.copy(label.position);
+          worldPos.applyMatrix4(elements.group.matrixWorld);
+          worldPos.project(camera);
+          const x = (worldPos.x * 0.5 + 0.5) * window.innerWidth;
+          const y = (-worldPos.y * 0.5 + 0.5) * window.innerHeight;
+          label.element.style.left = `${x}px`;
+          label.element.style.top = `${y}px`;
+          if (worldPos.z < 0.9) {
+            label.element.style.display = "block";
+            const opacity = Math.max(0.3, 1 - (worldPos.z + 1) / 2);
+            label.element.style.opacity = opacity.toString();
+            const zIndex = Math.round((1 - worldPos.z) * 1e3);
+            label.element.style.zIndex = zIndex;
+          } else {
+            label.element.style.display = "none";
+          }
+        }
+      }
+      let animationFrameId;
+      function animate() {
+        animationFrameId = requestAnimationFrame(animate);
+        if (autoRotate) {
+          elements.group.rotation.y += config.rotationSpeed;
+        }
+        controls.update();
+        if (config.showNodeNumbers) {
+          updateNodeLabels();
+        }
+        renderer.render(scene, camera);
+      }
+      function updateConfig(newConfig) {
+        config = mergeConfigs(config, newConfig);
+        if (newConfig.autoRotate !== void 0) {
+          autoRotate = newConfig.autoRotate;
+        }
+        if (newConfig.showNodes !== void 0 || newConfig.showNodeNumbers !== void 0 || newConfig.nodeSize !== void 0 || newConfig.colors && newConfig.colors.nodes !== void 0) {
+          createNodes();
+        }
+        if (newConfig.showCubeWireframe !== void 0 || newConfig.colors && newConfig.colors.wireframe !== void 0) {
+          createCubeWireframe();
+        }
+        if (newConfig.lineMode !== void 0 || newConfig.colors && newConfig.colors.sequenceLine !== void 0) {
+          createSequenceLine();
+        }
+        if (newConfig.colors && newConfig.colors.background !== void 0) {
+          scene.background = new Color(config.colors.background);
+        }
+        if (newConfig.camera !== void 0) {
+          if (newConfig.camera.fov !== void 0) {
+            camera.fov = newConfig.camera.fov;
+            camera.updateProjectionMatrix();
+          }
+          if (newConfig.camera.distance !== void 0) {
+            camera.position.setLength(newConfig.camera.distance);
+            camera.updateProjectionMatrix();
+          }
+        }
+        return api;
+      }
+      const destroy = init();
+      const api = {
+        updateConfig,
+        getConfig: () => ({ ...config }),
+        // Return a copy to prevent direct modification
+        destroy
+      };
+      return api;
     }
-    createNodes();
-    let autoRotate = CONFIG.autoRotate;
-    controls.addEventListener("end", function() {
-      if (CONFIG.autoRotate) {
-        setTimeout(() => {
-          autoRotate = true;
-        }, 500);
-      }
-    });
-    controls.addEventListener("start", function() {
-      autoRotate = false;
-    });
-    function animate() {
-      requestAnimationFrame(animate);
-      if (autoRotate) {
-        elements.group.rotation.y += CONFIG.rotationSpeed;
-      }
-      controls.update();
-      if (CONFIG.showNodeNumbers) {
-        updateNodeLabels();
-      }
-      renderer.render(scene, camera);
-    }
-    animate();
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-    Group.prototype.clear = function() {
-      while (this.children.length > 0) {
-        this.remove(this.children[0]);
-      }
+    return {
+      create
     };
-  });
+  }();
+  var trump_boyer_cube_default = TrumpBoyerCube;
+  if (typeof window !== "undefined") {
+    window.TrumpBoyerCube = TrumpBoyerCube;
+  }
 })();
 /**
  * Trump-Boyer Magic Cube Visualization

@@ -28,6 +28,31 @@ To build the distribution files:
 ```bash
 npm run build
 ```
+## Configuration
+
+The visualization can be customized through configuration options passed to the
+`create()` method or later via the `updateConfig()` method.
+
+```javascript
+// Basic usage with custom configuration
+const cube = TrumpBoyerCube.create(document.getElementById('container'), {
+  autoRotate: true,
+  showNodeNumbers: false,
+  colors: {
+    background: 0x222222
+  }
+});
+
+// Update configuration after creation
+cube.updateConfig({
+  lineMode: 'even',
+  nodeSize: 0.2
+});
+```
+
+See the [full examples](./examples/index.html) for all available configuration
+options.
+
 ## License
 
 MIT © José Fernández Ramos

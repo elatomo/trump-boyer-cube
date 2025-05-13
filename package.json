@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "description": "An interactive 3D visualization of the perfect magic cube of order 5 discovered by Walter Trump and Christian Boyer in 2003.",
   "main": "dist/trump-boyer-cube.js",
+  "module": "dist/trump-boyer-cube.esm.js",
   "browser": "dist/trump-boyer-cube.min.js",
+  "exports": {
+    "import": "./dist/trump-boyer-cube.esm.js",
+    "require": "./dist/trump-boyer-cube.js"
+  },
   "files": [
     "dist",
     "src",

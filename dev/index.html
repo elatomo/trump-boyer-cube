@@ -1,33 +1,55 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <title>Magic Cube 3D - Development</title>
+    <meta charset="utf-8" />
+    <title>Trump-Boyer Magic Cube - Development</title>
     <style>
-     body {
-       margin: 0;
-       overflow: hidden;
-       background: white;
-       font-family: Arial, sans-serif;
-     }
-     canvas {
-       display: block;
-     }
-     .node-label {
-       color: black;
-       font-weight: bold;
-       background: rgba(255, 255, 255, 0.7);
-       padding: 2px 4px;
-       border-radius: 3px;
-       position: absolute;
-       pointer-events: none;
-       font-size: 14px;
-       transform: translate(-50%, -50%);
-     }
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: white;
+        font-family: Arial, sans-serif;
+      }
+      #container {
+        width: 100vw;
+        height: 100vh;
+      }
+      canvas {
+        display: block;
+      }
+      .node-label {
+        color: black;
+        font-weight: bold;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 2px 4px;
+        border-radius: 3px;
+        position: absolute;
+        pointer-events: none;
+        font-size: 14px;
+        transform: translate(-50%, -50%);
+      }
     </style>
   </head>
   <body>
     <div id="container"></div>
     <script src="trump-boyer-cube.dev.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const container = document.getElementById("container");
+
+        const cube = TrumpBoyerCube.create(container, {
+          autoRotate: true,
+          showNodes: true,
+          showNodeNumbers: true,
+          colors: {
+            background: 0xf0f0f0,
+            nodes: 0x333333,
+          },
+        });
+
+        // Add to window for console testing
+        window.cube = cube;
+      });
+    </script>
   </body>
 </html>

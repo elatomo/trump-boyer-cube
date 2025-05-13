@@ -1,95 +1,658 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trump-Boyer Magic Cube - Example</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trump-Boyer Magic Cube - Example</title>
+    <style>
+      :root {
+        /* Color variables */
+        --color-dark: #333;
+        --color-light: #f5f5f5;
+        --color-white: #fff;
+        --color-accent: #2196f3;
+        --color-text-muted: #555;
+        --color-border: #ddd;
 
-    header {
-      background-color: #333;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-    }
+        /* Spacing and sizing */
+        --spacing-sm: 0.5rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
 
-    h1 {
-      margin: 0;
-      font-size: 1.8rem;
-    }
+        /* Shadows and effects */
+        --shadow-standard: 0 2px 10px rgba(0, 0, 0, 0.2);
+        --transition-standard: all 0.3s ease;
+        --border-radius: 4px;
+      }
 
-    p {
-      margin: 0.5rem 0 0;
-    }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: var(--color-light);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
 
-    #container {
-      flex: 1;
-      overflow: hidden;
-    }
+      header,
+      footer {
+        background-color: var(--color-dark);
+        color: var(--color-white);
+        z-index: 10;
+        text-align: center;
+      }
 
-    footer {
-      background-color: #333;
-      color: white;
-      padding: 0.8rem;
-      text-align: center;
-      font-size: 0.9rem;
-    }
+      header {
+        padding: var(--spacing-md);
+      }
 
-    a {
-      color: #4fc3f7;
-      text-decoration: none;
-    }
+      footer {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+      }
 
-    a:hover {
-      text-decoration: underline;
-    }
+      h1 {
+        margin: 0;
+        font-size: 1.8rem;
+      }
 
-    .node-label {
-      color: black;
-      font-weight: bold;
-      background: rgba(255, 255, 255, 0.7);
-      padding: 2px 4px;
-      border-radius: 3px;
-      position: absolute;
-      pointer-events: none;
-      font-size: 14px;
-      transform: translate(-50%, -50%);
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Trump-Boyer Magic Cube</h1>
-    <p>A perfect magic cube of order 5 discovered by Walter Trump and Christian Boyer in 2003</p>
-  </header>
+      p {
+        margin: var(--spacing-sm) 0 0;
+      }
 
-  <div id="container"></div>
+      #container {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+      }
 
-  <footer>
-    <p>Visualization by José Fernández Ramos | <a href="https://github.com/elatomo/trump-boyer-cube" target="_blank">View on GitHub</a></p>
-  </footer>
+      a {
+        color: #4fc3f7;
+        text-decoration: none;
+      }
 
-  <!-- Configure visualization (optional) -->
-  <script>
-    window.MAGIC_CUBE_CONFIG = {
-      autoRotate: true,
-      showNodeNumbers: true,
-      showCubeWireframe: true,
-      lineMode: "full"
-    };
-  </script>
+      a:hover {
+        text-decoration: underline;
+      }
 
-  <!-- Include the Trump-Boyer Cube library -->
-  <script src="../dist/trump-boyer-cube.min.js"></script>
-</body>
+      /* Node labels */
+      .node-label {
+        color: black;
+        font-weight: bold;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 2px 4px;
+        border-radius: var(--border-radius);
+        position: absolute;
+        pointer-events: none;
+        font-size: 14px;
+        transform: translate(-50%, -50%);
+      }
+
+      /* Control panel and toggle */
+      #toggle-controls {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: rgba(255, 255, 255, 0.9);
+        color: var(--color-dark);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 1001;
+        box-shadow: var(--shadow-standard);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease;
+      }
+
+      #toggle-controls:hover {
+        background-color: var(--color-white);
+      }
+
+      #control-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: 280px;
+        background-color: rgba(255, 255, 255, 0.95);
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        transition: var(--transition-standard);
+        z-index: 1000;
+        overflow-y: auto;
+        transform: translateX(100%);
+      }
+
+      #control-panel.open {
+        transform: translateX(0);
+      }
+
+      #toggle-controls.open {
+        transform: rotate(180deg);
+      }
+
+      /* Control panel interior */
+      #control-panel-header {
+        position: sticky;
+        top: 0;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 10px 0;
+        margin-bottom: 15px;
+        z-index: 2;
+      }
+
+      #control-panel h3 {
+        margin: 0;
+        color: var(--color-dark);
+      }
+
+      .control-group {
+        margin-bottom: 15px;
+      }
+
+      .control-group h4 {
+        margin: 0 0 8px 0;
+        color: var(--color-text-muted);
+        font-size: 0.9rem;
+        border-bottom: 1px solid var(--color-border);
+        padding-bottom: 5px;
+      }
+
+      .control-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .control-label {
+        flex-grow: 1;
+        font-size: 0.9rem;
+        color: var(--color-text-muted);
+      }
+
+      /* Form elements */
+      select,
+      input[type="range"] {
+        padding: 4px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius);
+        background-color: var(--color-white);
+        font-size: 0.9rem;
+      }
+
+      input[type="range"] {
+        width: 100%;
+      }
+
+      /* Toggle switch */
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 22px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: var(--transition-standard);
+        border-radius: 22px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+        background-color: var(--color-white);
+        transition: var(--transition-standard);
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: var(--color-accent);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(18px);
+      }
+
+      /* Color selector */
+      .color-preview {
+        width: 24px;
+        height: 24px;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--color-border);
+        cursor: pointer;
+      }
+
+      /* Menu icon */
+      .menu-icon {
+        width: 24px;
+        height: 24px;
+        position: relative;
+        transition: var(--transition-standard);
+      }
+
+      .menu-icon-bar {
+        position: absolute;
+        width: 100%;
+        height: 3px;
+        background-color: var(--color-dark);
+        left: 0;
+        transition: var(--transition-standard);
+        border-radius: 3px;
+      }
+
+      .menu-icon-bar:nth-child(1) {
+        top: 5px;
+      }
+      .menu-icon-bar:nth-child(2) {
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .menu-icon-bar:nth-child(3) {
+        bottom: 5px;
+      }
+
+      .menu-icon.open .menu-icon-bar:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+      }
+
+      .menu-icon.open .menu-icon-bar:nth-child(2) {
+        opacity: 0;
+      }
+
+      .menu-icon.open .menu-icon-bar:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+      }
+
+      /* Responsive */
+      @media (max-width: 600px) {
+        #control-panel {
+          width: 260px;
+        }
+
+        .control-row {
+          flex-direction: column;
+          align-items: flex-start;
+          margin-bottom: 12px;
+        }
+
+        .control-label {
+          margin-bottom: 5px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Trump-Boyer Magic Cube</h1>
+      <p>
+        A perfect magic cube of order 5 discovered by Walter Trump and Christian
+        Boyer in 2003
+      </p>
+    </header>
+
+    <div id="container">
+      <!-- Toggle button with hamburger menu icon -->
+      <button id="toggle-controls" aria-label="Toggle controls">
+        <div class="menu-icon">
+          <div class="menu-icon-bar"></div>
+          <div class="menu-icon-bar"></div>
+          <div class="menu-icon-bar"></div>
+        </div>
+      </button>
+
+      <!-- Slide-out control panel -->
+      <div id="control-panel">
+        <div id="control-panel-header">
+          <h3>Controls</h3>
+        </div>
+
+        <div class="control-group">
+          <h4>Visualization</h4>
+          <div class="control-row">
+            <span class="control-label">Auto Rotate</span>
+            <label class="switch">
+              <input type="checkbox" id="auto-rotate" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Show Nodes</span>
+            <label class="switch">
+              <input type="checkbox" id="show-nodes" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Show Numbers</span>
+            <label class="switch">
+              <input type="checkbox" id="show-numbers" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Show Wireframe</span>
+            <label class="switch">
+              <input type="checkbox" id="show-wireframe" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h4>Lines</h4>
+          <div class="control-row">
+            <span class="control-label">Line Mode</span>
+            <select id="line-mode">
+              <option value="full">Full</option>
+              <option value="even">Even numbers</option>
+              <option value="odd">Odd numbers</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h4>View & Geometry</h4>
+          <div class="control-row">
+            <span class="control-label"
+              >Camera Distance: <span id="camera-distance-value">25</span></span
+            >
+            <input
+              type="range"
+              id="camera-distance"
+              min="10"
+              max="40"
+              step="1"
+              value="25"
+            />
+          </div>
+          <div class="control-row">
+            <span class="control-label"
+              >Node Size: <span id="node-size-value">0.15</span></span
+            >
+            <input
+              type="range"
+              id="node-size"
+              min="0.05"
+              max="0.3"
+              step="0.01"
+              value="0.15"
+            />
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h4>Animation</h4>
+          <div class="control-row">
+            <span class="control-label"
+              >Rotation Speed:
+              <span id="rotation-speed-value">0.003</span></span
+            >
+            <input
+              type="range"
+              id="rotation-speed"
+              min="0.001"
+              max="0.01"
+              step="0.001"
+              value="0.003"
+            />
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h4>Colors</h4>
+          <div class="control-row">
+            <span class="control-label">Background</span>
+            <input
+              type="color"
+              id="bg-color"
+              value="#ffffff"
+              class="color-preview"
+            />
+          </div>
+          <div class="control-row">
+            <span class="control-label">Nodes</span>
+            <input
+              type="color"
+              id="node-color"
+              value="#333333"
+              class="color-preview"
+            />
+          </div>
+          <div class="control-row">
+            <span class="control-label">Wireframe</span>
+            <input
+              type="color"
+              id="wireframe-color"
+              value="#333333"
+              class="color-preview"
+            />
+          </div>
+          <div class="control-row">
+            <span class="control-label">Sequence Line</span>
+            <input
+              type="color"
+              id="sequence-color"
+              value="#000000"
+              class="color-preview"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        Visualization by José Fernández Ramos |
+        <a href="https://github.com/elatomo/trump-boyer-cube" target="_blank"
+          >View on GitHub</a
+        >
+      </p>
+    </footer>
+
+    <!-- Include the Trump-Boyer Cube library -->
+    <script src="../dist/trump-boyer-cube.min.js"></script>
+
+    <!-- Initialize and control the visualization -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize cube with default configuration
+        const container = document.getElementById("container");
+        const config = {
+          autoRotate: true,
+          showNodeNumbers: true,
+          showNodes: true,
+          showCubeWireframe: true,
+          lineMode: "full",
+          nodeSize: 0.15,
+          rotationSpeed: 0.003,
+          camera: {
+            distance: 25,
+          },
+          colors: {
+            background: 0xffffff,
+            nodes: 0x333333,
+            wireframe: 0x333333,
+            sequenceLine: 0x000000,
+          },
+        };
+
+        const cube = TrumpBoyerCube.create(container, config);
+
+        // Helper functions
+        function hexToDecimal(hex) {
+          return parseInt(hex.replace("#", ""), 16);
+        }
+
+        function decimalToHex(decimal) {
+          return "#" + decimal.toString(16).padStart(6, "0");
+        }
+
+        // Set UI elements to match initial configuration
+        document.getElementById("auto-rotate").checked = config.autoRotate;
+        document.getElementById("show-nodes").checked = config.showNodes;
+        document.getElementById("show-numbers").checked =
+          config.showNodeNumbers;
+        document.getElementById("show-wireframe").checked =
+          config.showCubeWireframe;
+        document.getElementById("line-mode").value = config.lineMode;
+        document.getElementById("camera-distance").value =
+          config.camera.distance;
+        document.getElementById("node-size").value = config.nodeSize;
+        document.getElementById("rotation-speed").value = config.rotationSpeed;
+
+        // Set color pickers to match initial configuration
+        document.getElementById("bg-color").value = decimalToHex(
+          config.colors.background,
+        );
+        document.getElementById("node-color").value = decimalToHex(
+          config.colors.nodes,
+        );
+        document.getElementById("wireframe-color").value = decimalToHex(
+          config.colors.wireframe,
+        );
+        document.getElementById("sequence-color").value = decimalToHex(
+          config.colors.sequenceLine,
+        );
+
+        // Update range labels
+        document.getElementById("camera-distance-value").textContent =
+          config.camera.distance;
+        document.getElementById("node-size-value").textContent =
+          config.nodeSize;
+        document.getElementById("rotation-speed-value").textContent =
+          config.rotationSpeed;
+
+        // Control panel toggle with menu icon animation
+        const toggleBtn = document.getElementById("toggle-controls");
+        const panel = document.getElementById("control-panel");
+        const menuIcon = toggleBtn.querySelector(".menu-icon");
+
+        toggleBtn.addEventListener("click", function () {
+          panel.classList.toggle("open");
+          menuIcon.classList.toggle("open");
+        });
+
+        // Close panel when clicking on the visualization area
+        container.addEventListener("click", function (e) {
+          if (
+            !panel.contains(e.target) &&
+            e.target !== toggleBtn &&
+            !toggleBtn.contains(e.target)
+          ) {
+            panel.classList.remove("open");
+            menuIcon.classList.remove("open");
+          }
+        });
+
+        // Helper function to update range labels
+        function updateRangeLabel(inputId, valueId, callback) {
+          const input = document.getElementById(inputId);
+          const value = document.getElementById(valueId);
+
+          input.addEventListener("input", function () {
+            value.textContent = this.value;
+            if (callback) callback(this.value);
+          });
+        }
+
+        // Toggle controls
+        document
+          .getElementById("auto-rotate")
+          .addEventListener("change", function (e) {
+            cube.updateConfig({ autoRotate: e.target.checked });
+          });
+
+        document
+          .getElementById("show-nodes")
+          .addEventListener("change", function (e) {
+            cube.updateConfig({ showNodes: e.target.checked });
+          });
+
+        document
+          .getElementById("show-numbers")
+          .addEventListener("change", function (e) {
+            cube.updateConfig({ showNodeNumbers: e.target.checked });
+          });
+
+        document
+          .getElementById("show-wireframe")
+          .addEventListener("change", function (e) {
+            cube.updateConfig({ showCubeWireframe: e.target.checked });
+          });
+
+        // Line mode selector
+        document
+          .getElementById("line-mode")
+          .addEventListener("change", function (e) {
+            cube.updateConfig({ lineMode: e.target.value });
+          });
+
+        // View & geometry
+        updateRangeLabel("node-size", "node-size-value", function (value) {
+          cube.updateConfig({ nodeSize: parseFloat(value) });
+        });
+
+        updateRangeLabel(
+          "camera-distance",
+          "camera-distance-value",
+          function (value) {
+            cube.updateConfig({
+              camera: { distance: parseInt(value) },
+            });
+          },
+        );
+
+        // Animation
+        updateRangeLabel(
+          "rotation-speed",
+          "rotation-speed-value",
+          function (value) {
+            cube.updateConfig({ rotationSpeed: parseFloat(value) });
+          },
+        );
+
+        // Color pickers - consolidated
+        function setupColorPicker(id, property) {
+          const picker = document.getElementById(id);
+          picker.addEventListener("input", function (e) {
+            const colorValue = hexToDecimal(e.target.value);
+            const colorUpdate = { colors: {} };
+            colorUpdate.colors[property] = colorValue;
+            cube.updateConfig(colorUpdate);
+          });
+        }
+
+        setupColorPicker("bg-color", "background");
+        setupColorPicker("node-color", "nodes");
+        setupColorPicker("wireframe-color", "wireframe");
+        setupColorPicker("sequence-color", "sequenceLine");
+      });
+    </script>
+  </body>
 </html>

@@ -1,26 +1,37 @@
 const esbuild = require("esbuild");
 
+// Common options
+const commonOptions = {
+  entryPoints: ["src/trump-boyer-cube.js"],
+  bundle: true,
+  sourcemap: true,
+};
+
+// Build minified IIFE version
 esbuild
   .build({
-    entryPoints: ["src/trump-boyer-cube.js"],
-    bundle: true,
+    ...commonOptions,
     minify: true,
-    sourcemap: true,
     format: "iife",
-    globalName: "TrumpBoyerCube",
     outfile: "dist/trump-boyer-cube.min.js",
   })
   .catch(() => process.exit(1));
 
-// Also build non-minified version
+// Build non-minified IIFE version
 esbuild
   .build({
-    entryPoints: ["src/trump-boyer-cube.js"],
-    bundle: true,
-    sourcemap: true,
+    ...commonOptions,
     format: "iife",
-    globalName: "TrumpBoyerCube",
     outfile: "dist/trump-boyer-cube.js",
+  })
+  .catch(() => process.exit(1));
+
+// Build ESM version
+esbuild
+  .build({
+    ...commonOptions,
+    format: "esm",
+    outfile: "dist/trump-boyer-cube.esm.js",
   })
   .then(() => console.log("✅ Build completed successfully"))
   .catch(() => {
